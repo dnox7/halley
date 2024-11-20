@@ -1,0 +1,10 @@
+BasedOnStyle: LLVM
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse
+AllowShortLoopsOnASingleLine: true
+BreakConstructorInitializers: BeforeColon
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+MaxEmptyLinesToKeep: 1
+SeparateDefinitionBlocks: Always
