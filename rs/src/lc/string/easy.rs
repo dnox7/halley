@@ -3897,4 +3897,208 @@ impl Solution {
             i.is_some() && j.is_some() && i.unwrap() + k - 1 != j.unwrap()
         }
     }
+
+    pub fn find_valid_pair_3438(s: String) -> String {
+        let mut freq = [0u8; 10];
+        let s_bytes = s.as_bytes();
+
+        s_bytes.iter().for_each(|c| freq[(c - b'0') as usize] += 1);
+
+        for i in 0..s.len() - 1 {
+            let curr = s_bytes[i] - b'0';
+            if curr != freq[curr as usize] {
+                continue;
+            }
+
+            if s_bytes[i] != s_bytes[i + 1]
+                && s_bytes[i + 1] - b'0' == freq[(s_bytes[i + 1] - b'0') as usize]
+            {
+                unsafe {
+                    return String::from_utf8_unchecked(s_bytes[i..i + 2].to_vec());
+                }
+            }
+        }
+        String::new()
+    }
+
+    pub fn max_difference_3442(s: String) -> i32 {
+        let mut freq = [0i8; 26];
+        s.as_bytes()
+            .iter()
+            .for_each(|c| freq[(c - b'a') as usize] += 1);
+
+        let (mut max_odd, mut min_even) = (i8::MIN, i8::MAX);
+        freq.iter().for_each(|count| {
+            if *count == 0 {
+                return;
+            }
+
+            if count % 2 == 0 {
+                min_even = min_even.min(*count);
+            } else {
+                max_odd = max_odd.max(*count);
+            }
+        });
+
+        (max_odd - min_even) as i32
+    }
+
+    pub fn has_special_substring_3456(s: String, k: i32) -> bool {
+        let mut count = 1;
+        for i in 1..s.len() {
+            if s.as_bytes()[i] != s.as_bytes()[i - 1] && count == k {
+                return true;
+            }
+
+            if s.as_bytes()[i] != s.as_bytes()[i - 1] {
+                count = 0;
+            }
+            count += 1;
+        }
+        return count == k;
+    }
+
+    pub fn has_same_digits_3461(s: String) -> bool {
+        let mut s = s.into_bytes();
+        while s.len() != 2 {
+            for i in 0..s.len() - 1 {
+                s[i] = (s[i] + s[i + 1] - 2 * b'0') % 10 + b'0';
+            }
+            s.pop();
+        }
+
+        s[0] == s[1]
+    }
+
+    pub fn reverse_degree_3498(s: String) -> i32 {
+        s.into_bytes()
+            .iter()
+            .enumerate()
+            .map(|(i, c)| (i + 1) as i32 * (b'z' - *c + 1) as i32)
+            .sum()
+    }
+
+    pub fn max_freq_sum(s: String) -> i32 {
+        let mut freq = [0u8; 26];
+        s.as_bytes()
+            .iter()
+            .for_each(|c| freq[(c - b'a') as usize] += 1);
+
+        let mut max_vowel = u8::MIN;
+        let mut max_consonant = u8::MIN;
+
+        for i in 0..freq.len() {
+            if matches!(i as u8 + b'a', b'a' | b'u' | b'e' | b'i' | b'o') {
+                max_vowel = max_vowel.max(freq[i]);
+                continue;
+            }
+
+            max_consonant = max_consonant.max(freq[i]);
+        }
+
+        (max_vowel + max_consonant) as i32
+    }
+
+    pub fn min_deletion_3545(s: String, k: i32) -> i32 {
+        let mut freq = [0; 26];
+        s.as_bytes()
+            .iter()
+            .for_each(|c| freq[(*c - b'a') as usize] += 1);
+        freq.sort_unstable();
+        freq[..26 - k as usize].iter().sum()
+    }
+
+    pub fn generate_tag_3582(caption: String) -> String {
+        let mut res: Vec<u8> = vec![];
+
+        let caption = caption.as_bytes();
+        let mut is_first_word = true;
+        let mut prev_is_alpha = false;
+        for i in 0..caption.len() {
+            if !caption[i].is_ascii_alphabetic() && caption[i] != b'#' {
+                prev_is_alpha = false;
+                continue;
+            }
+
+            if caption[i].is_ascii_alphabetic() {
+                if is_first_word {
+                    if res.is_empty() {
+                        res.push(b'#');
+                    }
+                    res.push(caption[i].to_ascii_lowercase());
+                    is_first_word = false;
+                    prev_is_alpha = true;
+                    continue;
+                }
+
+                if !prev_is_alpha {
+                    res.push(caption[i].to_ascii_uppercase());
+                    prev_is_alpha = true;
+                } else {
+                    res.push(caption[i].to_ascii_lowercase());
+                }
+            } else {
+                res.push(caption[i]);
+            }
+
+            if res.len() == 100 {
+                break;
+            }
+        }
+
+        if res.len() == 0 {
+            res.push(b'#');
+        }
+
+        unsafe {
+            return String::from_utf8_unchecked(res);
+        }
+    }
+
+    pub fn validate_coupons_3606(
+        code: Vec<String>,
+        business_line: Vec<String>,
+        is_active: Vec<bool>,
+    ) -> Vec<String> {
+        use std::collections::HashMap;
+
+        let is_valid_code = |code: &str| -> bool {
+            if code.is_empty() {
+                return false;
+            }
+
+            for b in code.as_bytes().iter() {
+                if !b.is_ascii_alphanumeric() && *b != b'_' {
+                    return false;
+                }
+            }
+            return true;
+        };
+
+        let is_valid_bussiness_line =
+            |bl: &str| matches!(bl, "electronics" | "grocery" | "pharmacy" | "restaurant");
+
+        let mut valid_idx = (0..code.len())
+            .filter(|&idx| {
+                is_valid_code(&code[idx])
+                    && is_valid_bussiness_line(&business_line[idx])
+                    && is_active[idx]
+            })
+            .collect::<Vec<_>>();
+
+        let priority: HashMap<&str, u8> = HashMap::from([
+            ("electronics", 0),
+            ("grocery", 1),
+            ("pharmacy", 2),
+            ("restaurant", 3),
+        ]);
+
+        valid_idx.sort_by(|x, y| {
+            priority[business_line[*x].as_str()]
+                .cmp(&priority[business_line[*y].as_str()])
+                .then(code[*x].cmp(&code[*y]))
+        });
+
+        valid_idx.iter().map(|idx| code[*idx].clone()).collect()
+    }
 }
