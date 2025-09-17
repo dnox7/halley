@@ -479,6 +479,52 @@ impl Solution {
             .collect()
     }
 
+    pub fn convert_to_base7_504_1(mut num: i32) -> String {
+        if num == 0 {
+            return String::from("0");
+        }
+
+        let mut res: Vec<u8> = vec![];
+        if num < 0 {
+            res.push(b'-');
+            num = -num;
+        }
+
+        let mut k = 1;
+        while k * 7 <= num {
+            k *= 7;
+        }
+
+        while k != 0 {
+            res.push((num / k) as u8 + b'0');
+            num = num - (num / k) * k;
+            k /= 7;
+        }
+
+        unsafe { String::from_utf8_unchecked(res) }
+    }
+
+    pub fn convert_to_base7_504_2(num: i32) -> String {
+        if num == 0 {
+            return String::from("0");
+        }
+
+        let mut n = num.abs();
+        let mut res: Vec<u8> = vec![];
+
+        while n > 0 {
+            res.push((n % 7) as u8 + b'0');
+            n /= 7;
+        }
+
+        if num < 0 {
+            res.push(b'-');
+        }
+
+        res.reverse();
+        unsafe { String::from_utf8_unchecked(res) }
+    }
+
     pub fn detect_capital_use_520(word: String) -> bool {
         let n = word.len();
         let chars: Vec<char> = word.chars().collect();
@@ -4053,6 +4099,28 @@ impl Solution {
         unsafe {
             return String::from_utf8_unchecked(res);
         }
+    }
+
+    pub fn concat_hex36_3602(n: i32) -> String {
+        let convert_to_base_k = |mut n: i32, k: i32| -> Vec<u8> {
+            let mut res: Vec<u8> = vec![];
+
+            while n > 0 {
+                let rem = n % k;
+                if rem >= 10 {
+                    res.push((rem - 10) as u8 + b'A');
+                } else {
+                    res.push(rem as u8 + b'0');
+                }
+                n /= k;
+            }
+            res.reverse();
+            return res;
+        };
+
+        let mut res = convert_to_base_k(n.pow(2), 16);
+        res.extend(convert_to_base_k(n.pow(3), 36));
+        unsafe { String::from_utf8_unchecked(res) }
     }
 
     pub fn validate_coupons_3606(
