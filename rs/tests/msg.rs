@@ -51,7 +51,7 @@ mod leetcode_test {
         fn new() -> MockMessenger {
             MockMessenger {
                 send_messages: RefCell::new(vec![]),
-            }   
+            }
         }
     }
 

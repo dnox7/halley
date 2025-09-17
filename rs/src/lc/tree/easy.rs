@@ -228,4 +228,49 @@ impl Solution {
         calc_sum(root, &mut res, true);
         return res;
     }
+
+    pub fn find_mode(root: Option<Rc<RefCell<TreeNode>>>) -> Vec<i32> {
+        fn dfs(
+            root: Option<Rc<RefCell<TreeNode>>>,
+            prev: &mut i32,
+            curr_freq: &mut i32,
+            max_freq: &mut i32,
+            res: &mut Vec<i32>,
+        ) {
+            match root {
+                None => return,
+                Some(root) => {
+                    dfs(root.borrow().left.clone(), prev, curr_freq, max_freq, res);
+
+                    let curr_val = root.borrow().val;
+                    if *prev != curr_val {
+                        if *curr_freq >= *max_freq {
+                            if *curr_freq != *max_freq {
+                                *max_freq = *curr_freq;
+                                res.pop();
+                            }
+                            res.push(*prev);
+                        }
+                        *prev = curr_val;
+                        *curr_freq = 1;
+                    } else {
+                        *curr_freq += 1;
+                    }
+
+                    dfs(root.borrow().right.clone(), prev, curr_freq, max_freq, res);
+                }
+            }
+        }
+
+        match root {
+            None => vec![],
+            Some(root) => {
+                let mut prev = root.borrow().val;
+                let mut res = vec![prev];
+
+                dfs(Some(root), &mut prev, &mut 0, &mut 0, &mut res);
+                return res;
+            }
+        }
+    }
 }
