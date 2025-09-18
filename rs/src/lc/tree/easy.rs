@@ -229,7 +229,24 @@ impl Solution {
         return res;
     }
 
-    pub fn find_mode(root: Option<Rc<RefCell<TreeNode>>>) -> Vec<i32> {
+    pub fn find_mode_501(root: Option<Rc<RefCell<TreeNode>>>) -> Vec<i32> {
+        fn handle_data(
+            prev: &mut i32,
+            curr_freq: &mut i32,
+            max_freq: &mut i32,
+            res: &mut Vec<i32>,
+        ) {
+            if *curr_freq >= *max_freq {
+                if *curr_freq != *max_freq {
+                    *max_freq = *curr_freq;
+                    res.clear();
+                }
+                if res.last().is_some_and(|x| *x != *prev) || res.is_empty() {
+                    res.push(*prev);
+                }
+            }
+        }
+
         fn dfs(
             root: Option<Rc<RefCell<TreeNode>>>,
             prev: &mut i32,
@@ -238,19 +255,13 @@ impl Solution {
             res: &mut Vec<i32>,
         ) {
             match root {
-                None => return,
+                None => handle_data(prev, curr_freq, max_freq, res),
                 Some(root) => {
                     dfs(root.borrow().left.clone(), prev, curr_freq, max_freq, res);
 
                     let curr_val = root.borrow().val;
                     if *prev != curr_val {
-                        if *curr_freq >= *max_freq {
-                            if *curr_freq != *max_freq {
-                                *max_freq = *curr_freq;
-                                res.pop();
-                            }
-                            res.push(*prev);
-                        }
+                        handle_data(prev, curr_freq, max_freq, res);
                         *prev = curr_val;
                         *curr_freq = 1;
                     } else {
@@ -266,11 +277,337 @@ impl Solution {
             None => vec![],
             Some(root) => {
                 let mut prev = root.borrow().val;
-                let mut res = vec![prev];
-
-                dfs(Some(root), &mut prev, &mut 0, &mut 0, &mut res);
+                let mut res = vec![];
+                dfs(Some(root), &mut prev, &mut 0, &mut 1, &mut res);
                 return res;
             }
         }
+    }
+
+    pub fn get_minimum_difference_530(root: Option<Rc<RefCell<TreeNode>>>) -> i32 {
+        fn dfs(root: Option<Rc<RefCell<TreeNode>>>, prev: &mut i32, res: &mut u32) {
+            match root {
+                None => return,
+                Some(root) => {
+                    dfs(root.borrow().left.clone(), prev, res);
+                    let curr_val = root.borrow().val;
+                    *res = curr_val.abs_diff(*prev).min(*res);
+                    *prev = curr_val;
+                    dfs(root.borrow().right.clone(), prev, res);
+                }
+            }
+        }
+
+        let mut res = u32::MAX;
+        let mut prev = i32::MAX;
+        dfs(root, &mut prev, &mut res);
+        return res as i32;
+    }
+
+    pub fn diameter_of_binary_tree_543(root: Option<Rc<RefCell<TreeNode>>>) -> i32 {
+        fn find_max_dist(root: Option<Rc<RefCell<TreeNode>>>, res: &mut i32) -> i32 {
+            match root {
+                None => 0,
+                Some(node) => {
+                    let left = find_max_dist(node.borrow().left.clone(), res);
+                    let right = find_max_dist(node.borrow().right.clone(), res);
+                    *res = (left + right).max(*res);
+                    return left.max(right) + 1;
+                }
+            }
+        }
+        let mut res = 0;
+        find_max_dist(root, &mut res);
+        return res;
+    }
+
+    pub fn find_tilt_563(root: Option<Rc<RefCell<TreeNode>>>) -> i32 {
+        fn dfs(root: Option<Rc<RefCell<TreeNode>>>, sum_titl: &mut i32) -> i32 {
+            match root {
+                None => 0,
+                Some(root) => {
+                    let left = dfs(root.borrow().left.clone(), sum_titl);
+                    let right = dfs(root.borrow().right.clone(), sum_titl);
+                    *sum_titl += left.abs_diff(right) as i32;
+                    return left + right + root.borrow().val;
+                }
+            }
+        }
+
+        let mut res = 0;
+        dfs(root, &mut res);
+        return res;
+    }
+
+    pub fn is_subtree_572(
+        root: Option<Rc<RefCell<TreeNode>>>,
+        sub_root: Option<Rc<RefCell<TreeNode>>>,
+    ) -> bool {
+        type Node = Option<Rc<RefCell<TreeNode>>>;
+        fn is_same(root: Node, sub_root: Node) -> bool {
+            match (root, sub_root) {
+                (None, None) => true,
+                (Some(root), Some(sub_root)) => {
+                    if root.borrow().val != sub_root.borrow().val {
+                        return false;
+                    }
+                    is_same(root.borrow().left.clone(), sub_root.borrow().left.clone())
+                        && is_same(root.borrow().right.clone(), sub_root.borrow().right.clone())
+                }
+                (_, _) => false,
+            }
+        }
+
+        fn solve(root: Node, sub_root: Node) -> bool {
+            match root {
+                None => false,
+                Some(root) => {
+                    is_same(Some(root.clone()), sub_root.clone())
+                        || solve(root.borrow().left.clone(), sub_root.clone())
+                        || solve(root.borrow().right.clone(), sub_root.clone())
+                }
+            }
+        }
+
+        solve(root, sub_root)
+    }
+
+    pub fn merge_trees_617(
+        root1: Option<Rc<RefCell<TreeNode>>>,
+        root2: Option<Rc<RefCell<TreeNode>>>,
+    ) -> Option<Rc<RefCell<TreeNode>>> {
+        match (root1, root2) {
+            (None, None) => None,
+            (Some(root1), None) => Some(root1),
+            (None, Some(root2)) => Some(root2),
+            (Some(root1), Some(root2)) => {
+                {
+                    let mut root1_mut = root1.borrow_mut();
+                    root1_mut.val += root2.borrow().val;
+                    root1_mut.left =
+                        Self::merge_trees_617(root1_mut.left.take(), root2.borrow().left.clone());
+                    root1_mut.right =
+                        Self::merge_trees_617(root1_mut.right.take(), root2.borrow().right.clone());
+                }
+                Some(root1)
+            }
+        }
+    }
+
+    pub fn average_of_levels_637(root: Option<Rc<RefCell<TreeNode>>>) -> Vec<f64> {
+        type Node = Option<Rc<RefCell<TreeNode>>>;
+        let mut queue: Vec<Node> = vec![root.clone()];
+        let mut res: Vec<f64> = vec![];
+        let mut curr_sum = 0;
+
+        while !queue.is_empty() {
+            let queue_len = queue.len();
+            (0..queue_len).for_each(|_| {
+                let node = queue.remove(0).unwrap();
+                curr_sum += node.borrow().val as i64;
+
+                if node.borrow().left.is_some() {
+                    queue.push(node.borrow().left.clone());
+                }
+
+                if node.borrow().right.is_some() {
+                    queue.push(node.borrow().right.clone());
+                }
+            });
+            res.push(curr_sum as f64 / queue_len as f64);
+            curr_sum = 0;
+        }
+        return res;
+    }
+
+    pub fn find_target_653_1(root: Option<Rc<RefCell<TreeNode>>>, k: i32) -> bool {
+        fn dfs(root: Option<Rc<RefCell<TreeNode>>>, inorder: &mut Vec<i32>) {
+            match root {
+                None => {}
+                Some(root) => {
+                    dfs(root.borrow().left.clone(), inorder);
+                    inorder.push(root.borrow().val);
+                    dfs(root.borrow().right.clone(), inorder);
+                }
+            }
+        }
+
+        let mut arr = vec![];
+        dfs(root, &mut arr);
+
+        let mut left = 0;
+        let mut right = arr.len() - 1;
+        let mut total;
+
+        while left < right {
+            total = arr[left] + arr[right];
+            if total == k {
+                return true;
+            } else if total > k {
+                right -= 1;
+            } else {
+                left += 1;
+            }
+        }
+        return false;
+    }
+
+    pub fn find_target_653_2(root: Option<Rc<RefCell<TreeNode>>>, k: i32) -> bool {
+        use std::collections::HashSet;
+        use std::collections::VecDeque;
+
+        let mut visited = HashSet::new();
+        let mut queue = VecDeque::new();
+        queue.push_back(root);
+
+        while let Some(node) = queue.pop_front() {
+            if let Some(node_ref) = node {
+                if visited.contains(&(k - node_ref.borrow().val)) {
+                    return true;
+                }
+
+                visited.insert(node_ref.borrow().val);
+                queue.push_back(node_ref.borrow().left.clone());
+                queue.push_back(node_ref.borrow().right.clone());
+            }
+        }
+        return false;
+    }
+
+    pub fn find_second_minimum_value_671(root: Option<Rc<RefCell<TreeNode>>>) -> i32 {
+        fn solve(node: Option<Rc<RefCell<TreeNode>>>, root_val: i32, res: &mut i64) {
+            match node {
+                None => {}
+                Some(node) => {
+                    if node.borrow().val != root_val {
+                        *res = (*res).min(node.borrow().val as i64);
+                        return;
+                    }
+
+                    solve(node.borrow().left.clone(), root_val, res);
+                    solve(node.borrow().right.clone(), root_val, res);
+                }
+            }
+        }
+
+        let mut res = i64::MAX;
+        solve(root.clone(), root.unwrap().borrow().val, &mut res);
+        if res != i64::MAX {
+            return res as i32;
+        }
+        return -1;
+    }
+
+    pub fn search_bst_700(
+        root: Option<Rc<RefCell<TreeNode>>>,
+        val: i32,
+    ) -> Option<Rc<RefCell<TreeNode>>> {
+        match root {
+            None => None,
+            Some(root) => {
+                let curr = root.borrow().val;
+                if curr == val {
+                    return Some(root);
+                }
+
+                if curr > val {
+                    return Self::search_bst_700(root.borrow().left.clone(), val);
+                }
+                return Self::search_bst_700(root.borrow().right.clone(), val);
+            }
+        }
+    }
+
+    pub fn min_diff_in_bst_783(root: Option<Rc<RefCell<TreeNode>>>) -> i32 {
+        fn dfs(root: Option<Rc<RefCell<TreeNode>>>, prev: &mut i32, res: &mut u32) {
+            match root {
+                None => return,
+                Some(root) => {
+                    dfs(root.borrow().left.clone(), prev, res);
+                    let curr_val = root.borrow().val;
+                    *res = curr_val.abs_diff(*prev).min(*res);
+                    *prev = curr_val;
+                    dfs(root.borrow().right.clone(), prev, res);
+                }
+            }
+        }
+
+        let mut res = u32::MAX;
+        let mut prev = i32::MAX;
+        dfs(root, &mut prev, &mut res);
+        return res as i32;
+    }
+
+    pub fn leaf_similar_872(
+        root1: Option<Rc<RefCell<TreeNode>>>,
+        root2: Option<Rc<RefCell<TreeNode>>>,
+    ) -> bool {
+        fn find_leaf_val_seq(root: Option<Rc<RefCell<TreeNode>>>, seq: &mut Vec<i32>) {
+            match root {
+                None => {}
+                Some(root) => {
+                    let left = root.borrow().left.clone();
+                    let right = root.borrow().right.clone();
+
+                    if left.is_none() && right.is_none() {
+                        seq.push(root.borrow().val);
+                        return;
+                    }
+
+                    find_leaf_val_seq(left, seq);
+                    find_leaf_val_seq(right, seq);
+                }
+            }
+        }
+
+        let mut seq1 = vec![];
+        let mut seq2 = vec![];
+        find_leaf_val_seq(root1, &mut seq1);
+        find_leaf_val_seq(root2, &mut seq2);
+        seq1 == seq2
+    }
+
+    pub fn range_sum_bst_938(root: Option<Rc<RefCell<TreeNode>>>, low: i32, high: i32) -> i32 {
+        fn inorder(root: Option<Rc<RefCell<TreeNode>>>, low: i32, high: i32, res: &mut i32) {
+            match root {
+                None => (),
+                Some(root) => {
+                    inorder(root.borrow().left.clone(), low, high, res);
+                    let curr_val = root.borrow().val;
+                    if curr_val > high {
+                        return;
+                    }
+
+                    if curr_val >= low && curr_val <= high {
+                        *res += curr_val;
+                    }
+                    inorder(root.borrow().right.clone(), low, high, res);
+                }
+            }
+        }
+
+        let mut res = 0;
+        inorder(root, low, high, &mut res);
+        return res;
+    }
+
+    pub fn is_unival_tree_965(root: Option<Rc<RefCell<TreeNode>>>) -> bool {
+        fn check(node: Option<Rc<RefCell<TreeNode>>>, mut root_val: i32, is_root: bool) -> bool {
+            match node {
+                None => true,
+                Some(node) => {
+                    if is_root {
+                        root_val = node.borrow().val;
+                    }
+
+                    if node.borrow().val != root_val {
+                        return false;
+                    }
+                    check(node.borrow().left.clone(), root_val, false)
+                        && check(node.borrow().right.clone(), root_val, false)
+                }
+            }
+        }
+        check(root, 0, true)
     }
 }
