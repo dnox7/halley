@@ -610,4 +610,29 @@ impl Solution {
         }
         check(root, 0, true)
     }
+
+    pub fn sum_root_to_leaf_1022(root: Option<Rc<RefCell<TreeNode>>>) -> i32 {
+        fn solve(root: Option<Rc<RefCell<TreeNode>>>, path: &String, res: &mut i32) {
+            match root {
+                None => (),
+                Some(root) => {
+                    let curr_val = root.borrow().val;
+                    let left = root.borrow().left.clone();
+                    let right = root.borrow().right.clone();
+
+                    let new_path = format!("{}{}", path, curr_val);
+                    if left.is_none() && right.is_none() {
+                        *res += i32::from_str_radix(&new_path, 2).unwrap();
+                    }
+
+                    solve(left, &new_path, res);
+                    solve(right, &new_path, res);
+                }
+            }
+        }
+
+        let mut res = 0;
+        solve(root, &String::new(), &mut res);
+        return res;
+    }
 }
