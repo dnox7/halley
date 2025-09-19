@@ -611,6 +611,53 @@ impl Solution {
         check(root, 0, true)
     }
 
+    pub fn is_cousins_993(root: Option<Rc<RefCell<TreeNode>>>, x: i32, y: i32) -> bool {
+        let mut found_x: bool;
+        let mut found_y: bool;
+        let mut queue = vec![root];
+
+        while !queue.is_empty() {
+            let queue_len = queue.len();
+            found_x = false;
+            found_y = false;
+
+            for _ in 0..queue_len {
+                let curr = queue.remove(0).unwrap();
+                let left = curr.borrow().left.clone();
+                let right = curr.borrow().right.clone();
+
+                if curr.borrow().val == x {
+                    found_x = true;
+                }
+                if curr.borrow().val == y {
+                    found_y = true;
+                }
+
+                if left.is_some() && right.is_some() {
+                    let left_val = left.as_ref().unwrap().borrow().val;
+                    let right_val = right.as_ref().unwrap().borrow().val;
+
+                    if (left_val == x && right_val == y) || (left_val == y && right_val == x) {
+                        return false;
+                    }
+                }
+
+                if left.is_some() {
+                    queue.push(left);
+                }
+
+                if right.is_some() {
+                    queue.push(right);
+                }
+            }
+
+            if found_x && found_y {
+                return true;
+            }
+        }
+        return false;
+    }
+
     pub fn sum_root_to_leaf_1022(root: Option<Rc<RefCell<TreeNode>>>) -> i32 {
         fn solve(root: Option<Rc<RefCell<TreeNode>>>, path: &String, res: &mut i32) {
             match root {
@@ -634,5 +681,89 @@ impl Solution {
         let mut res = 0;
         solve(root, &String::new(), &mut res);
         return res;
+    }
+
+    pub fn increasing_bst_897(
+        root: Option<Rc<RefCell<TreeNode>>>,
+    ) -> Option<Rc<RefCell<TreeNode>>> {
+        type Node = Option<Rc<RefCell<TreeNode>>>;
+        fn rearrange(root: Node, tail: Node) -> Node {
+            match root {
+                None => tail,
+                Some(root_rc) => {
+                    let res = rearrange(root_rc.borrow().left.clone(), Some(root_rc.clone()));
+                    root_rc.borrow_mut().left = None;
+                    let right_rearranged = rearrange(root_rc.borrow().right.clone(), tail);
+                    root_rc.borrow_mut().right = right_rearranged;
+                    return res;
+                }
+            }
+        }
+        rearrange(root, None)
+    }
+
+    pub fn check_tree_2236(root: Option<Rc<RefCell<TreeNode>>>) -> bool {
+        let root_rc = root.unwrap();
+        let left_rc = root_rc.borrow().left.clone().unwrap();
+        let right_rc = root_rc.borrow().right.clone().unwrap();
+
+        let root_val = root_rc.borrow().val;
+        let left_val = left_rc.borrow().val;
+        let right_val = right_rc.borrow().val;
+
+        root_val == left_val + right_val
+    }
+
+    pub fn evaluate_tree_2331(root: Option<Rc<RefCell<TreeNode>>>) -> bool {
+        match root {
+            None => true,
+            Some(root_rc) => {
+                let root_val = root_rc.borrow().val;
+                let left = root_rc.borrow().left.clone();
+                let right = root_rc.borrow().right.clone();
+
+                if left.is_none() && right.is_none() {
+                    return root_val != 0;
+                }
+
+                let left_val = Self::evaluate_tree_2331(left);
+                let right_val = Self::evaluate_tree_2331(right);
+                if root_val == 2 {
+                    return left_val || right_val;
+                }
+                left_val && right_val
+            }
+        }
+    }
+}
+
+#[allow(dead_code, non_camel_case_types)]
+struct KthLargest_703 {
+    min_heap: std::collections::BinaryHeap<std::cmp::Reverse<i32>>,
+    limit: usize,
+}
+
+#[allow(dead_code)]
+impl KthLargest_703 {
+    fn new(k: i32, nums: Vec<i32>) -> Self {
+        let mut kl = KthLargest_703 {
+            min_heap: std::collections::BinaryHeap::new(),
+            limit: k as usize,
+        };
+
+        for n in nums {
+            kl.add(n);
+        }
+        return kl;
+    }
+
+    fn add(&mut self, val: i32) -> i32 {
+        if self.min_heap.len() < self.limit {
+            self.min_heap.push(std::cmp::Reverse(val));
+        } else if val > self.min_heap.peek().unwrap().0 {
+            self.min_heap.pop();
+            self.min_heap.push(std::cmp::Reverse(val));
+        }
+        self.min_heap.peek().map_or(0, |&std::cmp::Reverse(x)| x)
     }
 }
