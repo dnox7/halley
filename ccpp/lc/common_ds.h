@@ -38,4 +38,43 @@ struct TreeNode {
         : val(x), left(left), right(right) {}
 };
 
+class QuadTreeNode {
+  public:
+    bool val;
+    bool isLeaf;
+    QuadTreeNode *topLeft;
+    QuadTreeNode *topRight;
+    QuadTreeNode *bottomLeft;
+    QuadTreeNode *bottomRight;
+
+    QuadTreeNode() {
+        val = false;
+        isLeaf = false;
+        topLeft = nullptr;
+        topRight = nullptr;
+        bottomLeft = nullptr;
+        bottomRight = nullptr;
+    }
+
+    QuadTreeNode(bool _val, bool _isLeaf) {
+        val = _val;
+        isLeaf = _isLeaf;
+        topLeft = nullptr;
+        topRight = nullptr;
+        bottomLeft = nullptr;
+        bottomRight = nullptr;
+    }
+
+    QuadTreeNode(bool _val, bool _isLeaf, QuadTreeNode *_topLeft,
+                 QuadTreeNode *_topRight, QuadTreeNode *_bottomLeft,
+                 QuadTreeNode *_bottomRight) {
+        val = _val;
+        isLeaf = _isLeaf;
+        topLeft = _topLeft;
+        topRight = _topRight;
+        bottomLeft = _bottomLeft;
+        bottomRight = _bottomRight;
+    }
+};
+
 #endif // LC_COMMON_DS_H
