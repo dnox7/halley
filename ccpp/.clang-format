@@ -3,6 +3,7 @@ AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: AllIfsAndElse
 AllowShortLoopsOnASingleLine: true
 BreakConstructorInitializers: BeforeColon
+ColumnLimit: 150
 IndentWidth: 4
 TabWidth: 4
 UseTab: Never
